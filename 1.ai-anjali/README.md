@@ -1,3 +1,10 @@
+---
+title: ai-anjali
+app_file: gradio_deploy.py
+sdk: gradio
+sdk_version: 5.42.0
+---
+
 # AI Anjali - Personal AI Assistant
 
 A sophisticated AI-powered personal assistant built with OpenAI's GPT models, featuring PDF document processing, user interaction tracking, and a modern Gradio web interface.
@@ -67,6 +74,39 @@ A sophisticated AI-powered personal assistant built with OpenAI's GPT models, fe
    python app.py
    ```
 
+## 🌐 Hugging Face Spaces Deployment
+
+### Deploying to Hugging Face Spaces:
+
+1. **Create a new Space** on [Hugging Face Spaces](https://huggingface.co/spaces)
+2. **Choose Gradio SDK** as your framework
+3. **Upload your files** or connect your GitHub repository
+4. **Set environment variables** in the Space settings:
+   - `OPENAI_API_KEY`: Your OpenAI API key
+   - `PUSHOVER_APP_TOKEN`: Your Pushover app token (optional)
+   - `PUSHOVER_USER_KEY`: Your Pushover user key (optional)
+
+### Fixing "ModuleNotFoundError: No module named 'openai'":
+
+If you encounter this error in Hugging Face Spaces:
+
+1. **Ensure `requirements.txt` is in the root directory** of your Space
+2. **Check the Space logs** for installation errors
+3. **Verify the requirements.txt format** - it should contain:
+   ```
+   openai>=1.0.0
+   python-dotenv>=1.0.0
+   gradio>=4.0.0
+   pypdf>=3.0.0
+   requests>=2.31.0
+   ```
+
+4. **Restart the Space** after making changes to requirements.txt
+
+### Alternative: Use requirements_hf.txt
+
+If the main requirements.txt doesn't work, rename `requirements_hf.txt` to `requirements.txt` in your Space.
+
 ## 🔐 Environment Variables
 
 Create a `.env` file in the project root directory with the following variables:
@@ -102,6 +142,7 @@ PUSHOVER_USER_KEY=your_pushover_user_key
 1.ai-anjali/
 ├── app.py                 # Main application file
 ├── requirements.txt       # Python dependencies
+├── requirements_hf.txt    # Hugging Face specific requirements
 ├── .env                  # Environment variables (create this)
 ├── .gitignore           # Git ignore patterns
 ├── README.md            # This file
@@ -178,6 +219,98 @@ The application automatically tracks:
 
 All interactions are logged and can be monitored through the console output.
 
+## 🧠 Developer Guide
+
+### Architecture Overview
+
+AI Anjali uses a sophisticated tool-based architecture with OpenAI function calling. The system intelligently decides when to use tools vs. providing direct responses.
+
+#### Tool Calling Decision Flow
+
+```mermaid
+flowchart TD
+    A[User Message] --> B[AI Analysis]
+    B --> C{Does AI need tools?}
+    
+    C -->|Yes| D[Tool Execution Path]
+    C -->|No| E[Direct Response Path]
+    
+    D --> F[Execute Tool]
+    F --> G[Add Tool Results to Context]
+    G --> H[Second API Call]
+    H --> I[Return Final Response]
+    
+    E --> J[Return Direct Response]
+    
+    style D fill:#e1f5fe
+    style E fill:#f3e5f5
+    style F fill:#e8f5e8
+    style H fill:#fff3e0
+```
+
+#### Detailed Tool Calling Logic
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant AI as AI Assistant
+    participant O as OpenAI API
+    participant T as Tools
+    
+    U->>AI: Ask question
+    AI->>O: First API call with tools available
+    O->>AI: Response (with/without tool_calls)
+    
+    alt Tool calls needed
+        AI->>T: Execute tools
+        T->>AI: Tool results
+        AI->>O: Second API call with tool results
+        O->>AI: Final response
+        AI->>U: Answer with tool data
+    else No tools needed
+        AI->>U: Direct answer
+    end
+```
+
+#### When Tools Are Used
+
+| Scenario | User Input | Tool Used | Why |
+|----------|------------|-----------|-----|
+| Contact Request | "I want to contact Anjali" | `record_user_details` | Needs to collect user information |
+| Unanswerable Question | "What's quantum computing?" | `record_unknown_question` | Can't answer from available data |
+| Simple Question | "What's Anjali's experience?" | None | Can answer directly from LinkedIn/summary |
+
+#### Tool Structure
+
+Each tool follows the OpenAI function calling standard:
+
+```python
+{
+    "type": "function",
+    "function": {
+        "name": "tool_name",
+        "description": "Clear description of what the tool does",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "param_name": {
+                    "type": "string|number|boolean",
+                    "description": "Parameter description"
+                }
+            },
+            "required": ["param_name"]
+        }
+    }
+}
+```
+
+#### Key Components
+
+- **`tool_choice="auto"`**: AI automatically decides when to use tools
+- **`temperature=0.7`**: Balanced creativity for professional responses
+- **Two-path system**: Tool execution or direct response based on AI analysis
+- **Context preservation**: Tool results are added to conversation history
+
 ## 🐛 Troubleshooting
 
 ### Common Issues:
@@ -196,6 +329,11 @@ All interactions are logged and can be monitored through the console output.
 
 4. **Port Already in Use**:
    - The default port is 7860. If busy, Gradio will automatically find an available port
+
+5. **Hugging Face Spaces Module Error**:
+   - Ensure `requirements.txt` is in the root directory
+   - Check Space logs for installation errors
+   - Restart the Space after updating requirements
 
 ### Debug Mode:
 
@@ -229,7 +367,6 @@ The project uses the following key dependencies:
 3. Commit your changes: `git commit -am 'Add feature'`
 4. Push to the branch: `git push origin feature-name`
 5. Submit a pull request
-
 
 ## 🆘 Support
 

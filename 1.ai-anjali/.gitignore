@@ -180,7 +180,6 @@ data/
 *.csv
 *.json
 *.xml
-*.txt
 
 # Logs
 logs/
@@ -217,7 +216,7 @@ config.json
 *.sqlite3
 
 # PDF files (if you don't want to track them)
-*.pdf
+# *.pdf
 
 # Cache directories
 .cache/
