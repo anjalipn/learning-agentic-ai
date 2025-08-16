@@ -221,11 +221,10 @@ with gr.Blocks(title="AI Anjali - Personal Assistant", theme=gr.themes.Soft(), c
     
     if assistant:
         chatbot = gr.Chatbot(
-            height=500, 
             show_label=False, 
             container=True, 
             type="messages",
-            avatar_images=["avatar/user.png", "avatar/anjali.png"],  # User avatar, AI avatar
+            avatar_images=["avatar/user.png", "avatar/anjali.jpg"],  # User avatar, AI avatar
             # Or use image files: avatar_images=["path/to/user.jpg", "path/to/ai.jpg"]
         )
         

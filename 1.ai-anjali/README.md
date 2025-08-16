@@ -1,6 +1,6 @@
 ---
-title: ai-anjali
-app_file: gradio_deploy.py
+title: 1.ai-anjali
+app_file: app.py
 sdk: gradio
 sdk_version: 5.42.0
 ---
