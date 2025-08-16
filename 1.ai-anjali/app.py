@@ -5,6 +5,7 @@ import json
 import os
 import requests
 from pypdf import PdfReader
+from theme import Seafoam
 
 # Load environment variables
 load_dotenv(override=True)
@@ -141,15 +142,16 @@ class Me:
         """Main chat function"""
         try:
             # Create system message
-            system_message = f"""You are {self.name}, a personal AI assistant.
+            system_message = f"""You are acting as {self.name}. You are answering questions on {self.name}'s website, \
+particularly questions related to {self.name}'s career, background, skills and experience. \
+Your responsibility is to represent {self.name} for interactions on the website as faithfully as possible. \
+You are given a summary of {self.name}'s background and LinkedIn profile which you can use to answer questions. \
+Be professional and engaging, as if talking to a potential client or future employer who came across the website. \
+If you don't know the answer to any question, use your record_unknown_question tool to record the question that you couldn't answer, even if it's about something trivial or unrelated to career. \
+If the user is engaging in discussion, try to steer them towards getting in touch via email; ask for their email and record it using your record_user_details tool. "
 
-Personal Summary: {self.summary}
-LinkedIn Profile: {self.linkedin}
-
-You have access to tools to record user interactions and track unanswered questions.
-Always be helpful, professional, and use the available tools when appropriate.
-If someone asks for contact information or wants to get in touch, use the record_user_details tool.
-If you can't answer a question, use the record_unknown_question tool to track it."""
+        system_message += f"\n\n## Summary:\n{self.summary}\n\n## LinkedIn Profile:\n{self.linkedin}\n\n"
+        system_message += f"With this context, please chat with the user, always staying in character as {self.name}."""
             
             # Prepare messages for OpenAI
             messages = [{"role": "system", "content": system_message}]
@@ -199,18 +201,31 @@ except Exception as e:
     print(f"Failed to initialize assistant: {e}")
     assistant = None
 
+
+
+seafoam = Seafoam()
 # Create Gradio interface
-with gr.Blocks(title="AI Anjali - Personal Assistant", theme=gr.themes.Soft(), css="""
-    .chatbot-avatar img {
-        width: 40px !important;
-        height: 40px !important;
-        border-radius: 50% !important;
-        object-fit: cover !important;
+with gr.Blocks(theme=seafoam, title="AI Anjali - Personal Assistant", css="""
+    /* Gradient header styling only */
+    .header-title {
+        background: linear-gradient(45deg, #00ff88, #00ccff, #ff0080);
+        background-size: 200% 200%;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        animation: gradientShift 3s ease infinite;
+        text-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+    }
+    
+    @keyframes gradientShift {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
     }
 """) as demo:
     
     gr.Markdown("""
-    # 🤖 AI Anjali - Personal AI Assistant
+    # <span class="header-title">🤖 AI Anjali - Personal AI Assistant</span>
     
     Hello! I'm Anjali's AI assistant. I can help you with information about Anjali, 
     answer any questions regarding Anjali's resume, career experience, and professional background. 
